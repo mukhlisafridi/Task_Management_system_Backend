@@ -15,6 +15,9 @@ app.use(cors({
 }))
 app.use(morgan("dev"))
 connectDB()
+
+import userRoute from "./routes/user.route.js"
+app.use("/user",userRoute)
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
