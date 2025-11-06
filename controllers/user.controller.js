@@ -1,20 +1,16 @@
 import userModel from "../models/user.model.js";
 import bcrypt from "bcryptjs";
-export const registerController = async (req, res) => {
+import jwt from "jsonwebtoken";
+import { errorHandler } from "../utils/error.js";
+export const registerController = async (req, res, next) => {
   try {
     const { name, email, password, profileImage, admin_JOIN_Code } = req.body;
     if (!name || !email || !password || !profileImage) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are require",
-      });
+      throw errorHandler(400, "All fields are require");
     }
     const exisitng = await userModel.findOne({ email });
     if (exisitng) {
-      return res.status(400).json({
-        success: false,
-        message: "User already exist",
-      });
+      throw errorHandler(400, "User Already exist..!");
     }
     let role = "user";
     if (admin_JOIN_Code && admin_JOIN_Code === process.env.ADMIN_CODE) {
@@ -26,7 +22,7 @@ export const registerController = async (req, res) => {
       email,
       password: hashPassword,
       profileImage,
-      role
+      role,
     });
 
     return res.status(201).json({
@@ -36,9 +32,35 @@ export const registerController = async (req, res) => {
     });
   } catch (error) {
     console.log(`error in registerController ${error}`);
-    return res.status(500).json({
-        success:false,
-        message:"internal server error"
-    })
+    throw errorHandler(500, error.message);
+  }
+};
+
+export const loginController = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      throw errorHandler(400, "All fields are required..!");
+    }
+
+    const existUser = await userModel.findOne({ email });
+    if (!existUser) {
+      throw errorHandler(404, "User not Found");
+    }
+    const isValidPassword = await bcrypt.compare(password, existUser.password);
+    if (!isValidPassword) {
+      throw errorHandler(400, "Invalid error or password");
+    }
+    const token = jwt.sign({ id: existUser._id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "7d",
+    });
+    existUser.password = undefined;
+    return res.status(200).json({
+      message: "Successfully Logined",
+      success: true,
+      token
+    });
+  } catch (error) {
+    throw errorHandler(500, error.message);
   }
 };

@@ -18,6 +18,14 @@ connectDB()
 
 import userRoute from "./routes/user.route.js"
 app.use("/user",userRoute)
+app.use((err,req,res,next)=>{
+  const statusCode = err.statusCode || 500
+  const message = err.message || "internal server error"
+  res.status(statusCode).json({
+    message,
+    success:false
+  })
+})
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
