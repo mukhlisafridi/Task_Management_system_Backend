@@ -4,6 +4,8 @@ import morgan from "morgan";
 import { connectDB } from "./utils/db.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import authRoutes from "./routes/auth.route.js";
+import userRoutes from "./routes/user.route.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -19,8 +21,12 @@ app.use(
 app.use(morgan("dev"));
 connectDB();
 
-import userRoute from "./routes/auth.route.js";
-app.use("/user", userRoute);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || "internal server error";
@@ -29,10 +35,6 @@ app.use((err, req, res, next) => {
     success: false,
   });
 });
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
 app.listen(PORT, () => {
   console.log(` app listening on port ${PORT}`);
 });

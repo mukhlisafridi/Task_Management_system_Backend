@@ -2,21 +2,22 @@ import Task from "../models/task.model.js";
 import User from "../models/user.model.js";
 import { errorHandler } from "../utils/error.js";
 
-export const getUser = async (req, res) => {
+export const getUsers = async (req, res, next) => {
   try {
+    // const users = await User.find({ role: "user" }).select("-password").lean();
     const users = await User.find({ role: "user" }).select("-password");
-    const userTaskCounts = new Promise(
+    const userTaskCounts = await Promise.all(
       users.map(async (user) => {
-        const pendingTasks = Task.countDocuments({
+        const pendingTasks = await Task.countDocuments({
           assignedTo: user._id,
           status: "Pending",
         });
 
-        const inProgressTasks = Task.countDocuments({
+        const inProgressTasks = await Task.countDocuments({
           assignedTo: user._id,
-          status: "In Process",
+          status: "In Progress",
         });
-        const completedTask = Task.countDocuments({
+        const completedTask = await Task.countDocuments({
           assignedTo: user._id,
           status: "completed",
         });
@@ -28,7 +29,21 @@ export const getUser = async (req, res) => {
         };
       })
     );
+    return res.status(200).json(userTaskCounts);
   } catch (error) {
-    throw errorHandler(500, error.message);
+    next(errorHandler(500, error.message));
+  }
+};
+
+export const getUserById = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) {
+      return next(errorHandler(404, "User Not Found..!"));
+    }
+    return res.status(200).json(user);
+  } catch (error) {
+    console.log(error.message);
+    next(errorHandler(500, error.message));
   }
 };

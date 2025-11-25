@@ -7,11 +7,12 @@ export const registerController = async (req, res, next) => {
   try {
     const { name, email, password, profileImage, admin_JOIN_Code } = req.body;
     if (!name || !email || !password || !profileImage) {
-      throw errorHandler(400, "All fields are require");
+      return next(errorHandler(400, "All fields are required..!"));
     }
     const exisitng = await userModel.findOne({ email });
     if (exisitng) {
-      throw errorHandler(400, "User Already exist..!");
+       return next(errorHandler(400, "User Already Exist..!"));
+
     }
     let role = "user";
     if (admin_JOIN_Code && admin_JOIN_Code === process.env.ADMIN_CODE) {
@@ -28,12 +29,13 @@ export const registerController = async (req, res, next) => {
 
     return res.status(201).json({
       success: true,
-      message: "User Created Successfully",
+      message: "User Created Successfully..!",
       user: User,
     });
   } catch (error) {
     console.log(`error in registerController ${error}`);
-    throw errorHandler(500, error.message);
+    return next(errorHandler(500, error.message));
+
   }
 };
 
@@ -41,18 +43,19 @@ export const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      throw errorHandler(400, "All fields are required..!");
+   return next(errorHandler(400, "All fields are required..!"));
+
     }
 
     const existUser = await userModel.findOne({ email });
     if (!existUser) {
-      throw errorHandler(404, "User not Found");
+      return  next(errorHandler(404, "User not Found"));
     }
     const isValidPassword = await bcrypt.compare(password, existUser.password);
     if (!isValidPassword) {
-      throw errorHandler(400, "Invalid error or password");
+     return next(errorHandler(400, "Invalid error or password"));
     }
-    const token = jwt.sign({ id: existUser._id }, process.env.JWT_SECRET_KEY, {
+    const token = jwt.sign({ id: existUser._id ,role:existUser.role}, process.env.JWT_SECRET_KEY, {
       expiresIn: "7d",
     });
 
@@ -62,24 +65,22 @@ export const loginController = async (req, res) => {
       .cookie("token", token, { httpOnly: true, secure: false })
       .status(200)
       .json({
-        message: "Successfully Logined",
+        message: "Successfully Logined..!",
         success: true,
         token,
         user: existUser,
       });
   } catch (error) {
-    throw errorHandler(500, error.message);
+    return next(errorHandler(500, error.message));
   }
 };
 
 export const userProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log(userId);
-
     const user = await userModel.findById(userId);
     if (!user) {
-      throw errorHandler(404, "User not found..!");
+    return  next(errorHandler(404, "User not found..!"));
     }
 
     // const {password :pass , ...rest} = user._doc
@@ -90,7 +91,7 @@ export const userProfile = async (req, res) => {
       user,
     });
   } catch (error) {
-    throw errorHandler(error.message);
+   return next(errorHandler(error.message));
   }
 };
 
@@ -99,7 +100,7 @@ export const updateProfile = async (req, res) => {
     const userId = req.user.id;
     const user = await userModel.findById(userId);
     if (!user) {
-      throw errorHandler(404, "User not Found..");
+    return next(errorHandler(404, "User not Found..!"));
     }
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
@@ -113,13 +114,13 @@ export const updateProfile = async (req, res) => {
       updatedProfile,
     });
   } catch (error) {
-    throw errorHandler(500, error.message);
+    return next(errorHandler(500, error.message));
   }
 };
 export const uploadImage =async(req,res)=>{
   try {
     if(!req.file){
-      throw (errorHandler(404,"Image not uploaded..!"))
+      return next((errorHandler(404,"Image not uploaded..!")))
     }
     const imageURL = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
     return res.status(200).json({
@@ -127,6 +128,6 @@ export const uploadImage =async(req,res)=>{
      imageURL
     })
   } catch (error) {
-    throw (errorHandler(500,message))
+  return  next((errorHandler(500,message)))
   }
 }
