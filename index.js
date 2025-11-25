@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
+import taskRoutes from "./routes/task.route.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -23,6 +24,7 @@ connectDB();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/task", taskRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
