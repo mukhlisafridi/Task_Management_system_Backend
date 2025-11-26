@@ -37,61 +37,60 @@ export const createTask = async (req, res, next) => {
   }
 };
 
-
 export const getTasks = async (req, res, next) => {
   try {
-    const { status } = req.query
-    let filter = {}
+    const { status } = req.query;
+    let filter = {};
     if (status) {
-      filter.status = status
+      filter.status = status;
     }
     let tasks;
     if (req.user.role === "admin") {
       tasks = await Task.find(filter).populate(
         "assignedTo",
         "name email profileImage"
-      )
+      );
     } else {
       tasks = await Task.find({
         ...filter,
         assignedTo: req.user.id,
-      }).populate("assignedTo", "name email profileImageUrl")
+      }).populate("assignedTo", "name email profileImageUrl");
     }
 
-    // complete task counted 
+    // complete task counted
     tasks = await Promise.all(
       tasks.map(async (task) => {
         const completedCount = task.todoChecklist.filter(
           (item) => item.completed
-        ).length
- 
-        return { ...task._doc, completedCount: completedCount }
+        ).length;
+
+        return { ...task._doc, completedCount: completedCount };
       })
-    )   
+    );
 
     // status summary count
 
     const allTasks = await Task.countDocuments(
       req.user.role === "admin" ? {} : { assignedTo: req.user.id }
-    )
+    );
 
     const pendingTasks = await Task.countDocuments({
       ...filter,
       status: "Pending",
       ...(req.user.role !== "admin" && { assignedTo: req.user.id }),
-    })
+    });
 
     const inProgressTasks = await Task.countDocuments({
       ...filter,
       status: "In Progress",
       ...(req.user.role !== "admin" && { assignedTo: req.user.id }),
-    })
+    });
 
     const completedTasks = await Task.countDocuments({
       ...filter,
       status: "Completed",
       ...(req.user.role !== "admin" && { assignedTo: req.user.id }),
-    })
+    });
 
     res.status(200).json({
       tasks,
@@ -101,8 +100,52 @@ export const getTasks = async (req, res, next) => {
         inProgressTasks,
         completedTasks,
       },
-    })
+    });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
+export const getTaskById = async (req, res, next) => {
+  try {
+    const task = await Task.findById(req.params.id).populate(
+      "assignedTo",
+      "name email ProfileImage"
+    );
+    if (!task) {
+      return next(errorHandler(404, "Task Not Found..!"));
+    }
+    return res.status(200).json(task);
+  } catch (error) {
+    console.log(error.message);
+    return next(errorHandler(500, error.message));
+  }
+};
+export const updateTask = async (req, res, next) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return next(errorHandler(404, "Task Not Found..!"));
+    }
+
+    task.title = req.body.title || task.title;
+    task.description = req.body.description || description.title;
+    task.priority = req.body.priority || task.priority;
+    task.dueDate = req.body.dueDate || task.dueDate;
+    task.todoChecklist = req.body.todoChecklist || task.todoChecklist;
+    task.attachments = req.body.attachments || task.attachments;
+    if (assignedTo) {
+      if (!Array.isArray(assignedTo)) {
+        return next(errorHandler(400, "AssignedTo Is Not Array..!"));
+      }
+    }
+    task.assignedTo = req.body.assignedTo || task.assignedTo;
+    const updatedTask = await task.save();
+    return res.status(200).json({
+      message:"Task Updated Successfully..!",
+      updatedTask
+    });
+  } catch (error) {
+    console.log(error.message);
+    return next(errorHandler(500, error.message));
+  }
+};
