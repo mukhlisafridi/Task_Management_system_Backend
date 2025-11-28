@@ -7,6 +7,7 @@ import cors from "cors";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import taskRoutes from "./routes/task.route.js";
+import reportRoutes from "./routes/report.route.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -25,6 +26,7 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
