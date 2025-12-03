@@ -7,13 +7,13 @@ export const registerController = async (req, res, next) => {
   try {
     const { name, email, password, profileImage, admin_JOIN_Code } = req.body;
     
-    console.log("📝 Register Request:", { name, email, hasPassword: !!password, hasImage: !!profileImage });
+    console.log(" Register Request:", { name, email, hasPassword: !!password, hasImage: !!profileImage });
     
     if (!name || !email || !password) {
       return next(errorHandler(400, "Name, email and password are required!"));
     }
     
-    // ✅ Lowercase email for consistency
+    //  Lowercase email for consistency
     const normalizedEmail = email.toLowerCase().trim();
     
     const existing = await userModel.findOne({ email: normalizedEmail });
@@ -27,7 +27,7 @@ export const registerController = async (req, res, next) => {
     }
     
     const hashPassword = await bcrypt.hash(password, 10);
-    console.log("🔒 Password hashed successfully");
+    console.log(" Password hashed successfully");
     
     const User = await userModel.create({
       name,
@@ -39,7 +39,7 @@ export const registerController = async (req, res, next) => {
 
     User.password = undefined;
 
-    console.log("✅ User created:", { email: User.email, role: User.role });
+    console.log("User created:", { email: User.email, role: User.role });
 
     return res.status(201).json({
       success: true,
@@ -47,7 +47,7 @@ export const registerController = async (req, res, next) => {
       user: User,
     });
   } catch (error) {
-    console.error(`❌ Register Error: ${error.message}`);
+    console.error(` Register Error: ${error.message}`);
     return next(errorHandler(500, error.message));
   }
 };
@@ -56,32 +56,32 @@ export const loginController = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     
-    console.log("🔑 Login Attempt:", { email });
+    console.log(" Login Attempt:", { email });
     
     if (!email || !password) {
       return next(errorHandler(400, "All fields are required!"));
     }
 
-    // ✅ Normalize email
+    //  Normalize email
     const normalizedEmail = email.toLowerCase().trim();
     
-    console.log("🔍 Searching for user:", normalizedEmail);
+    console.log(" Searching for user:", normalizedEmail);
     
     const existUser = await userModel.findOne({ email: normalizedEmail });
     
     if (!existUser) {
-      console.log("❌ User not found in database");
+      console.log(" User not found in database");
       return next(errorHandler(404, "User not found"));
     }
     
-    console.log("✅ User found:", { email: existUser.email, role: existUser.role });
+    console.log(" User found:", { email: existUser.email, role: existUser.role });
     
     const isValidPassword = await bcrypt.compare(password, existUser.password);
     
-    console.log("🔒 Password match:", isValidPassword);
+    console.log(" Password match:", isValidPassword);
     
     if (!isValidPassword) {
-      console.log("❌ Invalid password");
+      console.log(" Invalid password");
       return next(errorHandler(400, "Invalid email or password"));
     }
     
@@ -93,13 +93,13 @@ export const loginController = async (req, res, next) => {
 
     existUser.password = undefined;
     
-    console.log("✅ Login successful - Role:", existUser.role);
+    console.log(" Login successful - Role:", existUser.role);
     
     return res
       .cookie("token", token, { 
         httpOnly: true, 
-        secure: false,
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none',
         maxAge: 7 * 24 * 60 * 60 * 1000
       })
       .status(200)
@@ -110,12 +110,12 @@ export const loginController = async (req, res, next) => {
         user: existUser,
       });
   } catch (error) {
-    console.error(`❌ Login Error: ${error.message}`);
+    console.error(` Login Error: ${error.message}`);
     return next(errorHandler(500, error.message));
   }
 };
 
-// ✅ Logout function
+//  Logout function
 export const logoutController = async (req, res, next) => {
   try {
     return res
@@ -190,14 +190,14 @@ export const uploadImage = async (req, res, next) => {
     
     const imageURL = req.file.path;
     
-    console.log("✅ Image uploaded to Cloudinary:", imageURL);
+    console.log(" Image uploaded to Cloudinary:", imageURL);
     
     return res.status(200).json({
       success: true,
       imageURL
     });
   } catch (error) {
-    console.error("❌ Upload Error:", error);
+    console.error(" Upload Error:", error);
     return next(errorHandler(500, error.message));
   }
 };

@@ -34,7 +34,7 @@ app.use(morgan("dev"));
 
 connectDB();
 
-// ✅ Routes
+//  Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
@@ -44,7 +44,7 @@ app.use("/api/reports", reportRoutes);
 app.get("/", (req, res) => {
   res.json({ 
     message: "Task Management API with Cloudinary is running!",
-    cloudinary: "✅ Enabled"
+    cloudinary: " Enabled"
   });
 });
 
@@ -53,7 +53,7 @@ app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal server error";
   
-  console.error("❌ Error:", message);
+  console.error(" Error:", message);
   
   res.status(statusCode).json({
     message,
@@ -62,5 +62,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(` Server running on port ${PORT}`);
 });
