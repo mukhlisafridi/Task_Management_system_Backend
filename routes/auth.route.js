@@ -1,6 +1,7 @@
 import express from "express";
 import {
   loginController,
+  logoutController,
   registerController,
   updateProfile,
   uploadImage,
@@ -12,6 +13,7 @@ const router = express.Router();
 // user
 router.post("/register", registerController);
 router.post("/login", loginController);
+router.post("/logout", logoutController);
 router.get("/profile", verification, userProfile);
 router.put("/profile-update", verification, updateProfile);
 router.post("/upload-image",upload.single("image") , uploadImage);

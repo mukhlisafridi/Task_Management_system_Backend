@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -9,6 +10,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      lowercase: true,  // ✅ Always lowercase for consistency
+      trim: true,  // ✅ Remove spaces
     },
     password: {
       type: String,
@@ -27,4 +30,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.models.User || mongoose.model("User", userSchema);
+// ✅ FIXED: Simple export (no conditional)
+const User = mongoose.model("User", userSchema);
+
+export default User;

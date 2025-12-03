@@ -8,37 +8,59 @@ import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import taskRoutes from "./routes/task.route.js";
 import reportRoutes from "./routes/report.route.js";
+
 dotenv.config();
+
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
+
+// Middleware
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ✅ CORS - IMPORTANT
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 app.use(morgan("dev"));
+
+// ✅ Connect DB
 connectDB();
 
+// ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/reports", reportRoutes);
 
+// Root route
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.json({ 
+    message: "Task Management API with Cloudinary is running!",
+    cloudinary: "✅ Enabled"
+  });
 });
+
+// Error handler
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const message = err.message || "internal server error";
+  const message = err.message || "Internal server error";
+  
+  console.error("❌ Error:", message);
+  
   res.status(statusCode).json({
     message,
     success: false,
   });
 });
+
 app.listen(PORT, () => {
-  console.log(` app listening on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
