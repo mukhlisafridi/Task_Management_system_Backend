@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-app.use(
+app.use(                               
   cors({
     origin: ["http://localhost:5173","https://task-management-system-frontend-afridi.vercel.app"],
     credentials: true,
