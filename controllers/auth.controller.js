@@ -200,4 +200,4 @@ export const uploadImage = async (req, res, next) => {
     console.error(" Upload Error:", error);
     return next(errorHandler(500, error.message));
   }
-};
+}
